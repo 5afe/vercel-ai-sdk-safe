@@ -3,7 +3,7 @@ import * as dotenv from "dotenv";
 import { ollama } from 'ollama-ai-provider';
 const model = ollama('llama3.2');
 import { z } from 'zod';
-import { deployNewSafe } from './safe/deploy';
+import { deployNewSafe, getEthBalance } from './safe/safe';
 
 dotenv.config();
 
@@ -12,7 +12,6 @@ const main = async () => {
         model,
         system:
             'Create a new Safe.',
-
         tools: {
             createSafe: tool({
                 description: "To deploy a Safe smart account on any EVM chain, you need to specify the chainId (type number), owners (type: list of 20 bytes addresses) and the threshold (type: number). The threshold should be always less than or equal to the number of owners.",
@@ -21,9 +20,19 @@ const main = async () => {
                 execute: async (params) => {
                     return await deployNewSafe()
                 }
-            })
+            }),
+            getEthBalance: tool({
+                description: "Call to get the balance in ETH of a Safe Multisig for a given address and chain ID.",
+                parameters: z.object({
+                    address: z.string(),
+                    chainId: z.string()
+                }),
+                execute: async (params) => {
+                    return await getEthBalance(params.address, parseInt(params.chainId))
+                }
+            }),
         },
-        prompt: "Please deploy a new Safe"
+        prompt: "What is ETH balance of Safe Multisig for address 0xF9D357d80D7de11b752a0D8020E82d241d889691 on chainId 11155111?"
     })
 
     // messages: [
@@ -96,7 +105,7 @@ const main = async () => {
     //     prompt: ""
     // })
 
-    console.log(deploySafeResponse)
+    console.log(deploySafeResponse.toolResults);
 };
 
 main().catch(console.error);

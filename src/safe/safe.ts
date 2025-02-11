@@ -1,6 +1,7 @@
 import Safe from "@safe-global/protocol-kit";
 import { createPublicClient, http } from "viem";
 import { sepolia } from "viem/chains";
+import { formatEther } from 'viem'
 
 export const deployNewSafe = async () => {
     const saltNonce = Math.trunc(Math.random() * 10 ** 10).toString(); // Random 10-digit integer
@@ -34,7 +35,7 @@ export const deployNewSafe = async () => {
   
     const publicClient = createPublicClient({
       chain: sepolia,
-      transport: http(),
+      transport: http(process.env.RPC as string),
     });
   
     await publicClient?.waitForTransactionReceipt({
@@ -42,4 +43,41 @@ export const deployNewSafe = async () => {
     });
   
     return `A new Safe multisig was successfully deployed on Sepolia. You can see it live at https://app.safe.global/home?safe=sep:${safeAddress}. The saltNonce used was ${saltNonce}.`;
-  };
+};
+
+export const getEthBalance = async (address: string, chainId: number) => {
+  
+  const publicClient = createPublicClient({
+    chain: sepolia,
+    transport: http(process.env.RPC as string),
+  });
+
+  const chainIdFromRPC = await publicClient.getChainId();
+
+  if (chainId !== chainIdFromRPC) throw new Error("Chain ID not supported.");
+  if (!address.startsWith("0x") || address.length !== 42) {
+    throw new Error("Invalid address.");
+  }
+
+  const fetchedEthBalance = await fetch(
+    `https://safe-transaction-sepolia.safe.global/api/v1/safes/${address}/balances/`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  ).catch((error) => {
+    throw new Error("Error fetching data from the tx service:" + error);
+  });
+
+  const ethBalanceData = await fetchedEthBalance.json();
+  console.log(ethBalanceData);
+  const weiBalance = ethBalanceData.find(
+    (element: any) => element?.tokenAddress === null && element?.token === null
+  )?.balance;
+
+  const ethBalance = formatEther(weiBalance); // Convert from wei to eth considering fractional values
+
+  return `The current balance of the Safe Multisig at address ${address} is ${ethBalance} ETH.`;
+};
