@@ -72,7 +72,6 @@ export const getEthBalance = async (address: string, chainId: number) => {
   });
 
   const ethBalanceData = await fetchedEthBalance.json();
-  console.log(ethBalanceData);
   const weiBalance = ethBalanceData.find(
     (element: any) => element?.tokenAddress === null && element?.token === null
   )?.balance;
