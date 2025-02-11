@@ -7,6 +7,11 @@
 See: https://github.com/ollama/ollama
 
 ```bash
-ollama run phi3
+ollama run llama3.2
 ```
 
+### Exeucte script
+
+```bash
+npx tsx src/index.ts
+```
