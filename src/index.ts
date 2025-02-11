@@ -14,7 +14,7 @@ const main = async () => {
             'Create a new Safe.',
         tools: {
             createSafe: tool({
-                description: "To deploy a Safe smart account on any EVM chain, you need to specify the chainId (type number), owners (type: list of 20 bytes addresses) and the threshold (type: number). The threshold should be always less than or equal to the number of owners.",
+                description: "Deploy a Safe smart account on any EVM chain with a random salt nonce. The Safe owner will the the agent address set from .env file with threshold of 1.",
                 parameters: z.object({
                 }),
                 execute: async (params) => {
@@ -32,7 +32,7 @@ const main = async () => {
                 }
             }),
         },
-        prompt: "Deploy a new Safe"
+        prompt: "Please show ETH balance of Safe Smart Account at address 0xF9D357d80D7de11b752a0D8020E82d241d889691 on chain 11155111."
     })
 
     console.log(response.toolResults);
